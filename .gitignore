@@ -108,6 +108,7 @@ run.sh
 logs/
 saves/
 wandb/
+out/
 
 # Slurm
 *.out

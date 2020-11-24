@@ -4,7 +4,13 @@ import multiprocessing as mp
 def get_args():
     parser = argparse.ArgumentParser(description='MAML RL')
 
-    parser.add_argument('--config', type=str, required=True, help='path to the configuration file.')
+    parser.add_argument('--config', type=str, default=None, help='path to the configuration file.')
+
+
+    # Environment
+    env = parser.add_argument_group('Environment')
+    env.add_argument('--env-name', type=str, default='StockMarket-v0', 
+        choices=['Sparse2DNavigation-v0','Noisy2DNavigation-v0','StockMarket-v0'])
 
     # Miscellaneous
     misc = parser.add_argument_group('Miscellaneous')

@@ -1,14 +1,14 @@
 import gym
 import torch
 import json
-import os
+import os, sys
 import yaml
 import pdb
 from functools import reduce
 from operator import mul
 
 from config import get_args
-import maml_rl.envs
+from maml_rl import envs
 from maml_rl.metalearners import MAMLTRPO
 from maml_rl.baseline import LinearFeatureBaseline
 from maml_rl.samplers import MultiTaskSampler
@@ -16,13 +16,27 @@ from maml_rl.policies.categorical_mlp import CategoricalMLPPolicy
 from maml_rl.policies.normal_mlp import NormalMLPPolicy
 from maml_rl.solver.solver import Solver
 
+def update_config(config, args) :
+  config['env-name'] = args.env_name
+  if args.env_name == 'StockMarket-v0' :
+    config['env-kwargs'] = {'lookback':30}
+  # config['num-steps'] = 4
+    
+  return config
+
+
 def resolve_settings(args):
     # set device
     args.device = ('cuda' if (torch.cuda.is_available() and args.use_cuda) else 'cpu')
 
     # import yaml config
-    with open(args.config, 'r') as f:
-        config = yaml.load(f, Loader=yaml.FullLoader)
+    if args.config is not None :
+      with open(args.config, 'r') as f:
+          config = yaml.load(f, Loader=yaml.FullLoader)
+    else :
+      with open('configs/maml/2d-navigation.yaml', 'r') as f:
+          config = yaml.load(f, Loader=yaml.FullLoader)
+      config = update_config(config, args)
 
     # directories
     args.output_folder = os.path.join('out', args.output_folder)
@@ -35,13 +49,23 @@ def resolve_settings(args):
     with open(args.config_filedir, 'w') as f:
         config.update(vars(args))
         json.dump(config, f, indent=2)
-
+    
     return args, config
 
 def set_random_seed(args):
     if args.seed is not None:
         torch.manual_seed(args.seed)
         torch.cuda.manual_seed_all(args.seed)
+
+def get_environment(args, config) :
+  if args.config is not None :
+    env = gym.make(config['env-name'], **config.get('env-kwargs', {}))
+    env.close()
+  else :
+    env = gym.make(args.env_name, **config.get('env-kwargs', {}))
+    env.close()
+
+  return env
 
 def get_policy_for_env(args, env, hidden_sizes=(100, 100), nonlinearity='relu'):
     continuous_actions = isinstance(env.action_space, gym.spaces.Box)
@@ -70,8 +94,7 @@ def main(args, config):
     set_random_seed(args)
 
     # Environment
-    env = gym.make(config['env-name'], **config.get('env-kwargs', {}))
-    env.close()
+    env = get_environment(args, config)
 
     # Policy & Baseline
     policy = get_policy_for_env(args, env, hidden_sizes=config['hidden-sizes'], 
@@ -107,4 +130,7 @@ if __name__ == '__main__':
     args, config = resolve_settings(args)
     print(args,'\n',config,'\n')
     
-    main(args, config)
+    try :
+      main(args, config)
+    except KeyboardInterrupt :
+      sys.exit()

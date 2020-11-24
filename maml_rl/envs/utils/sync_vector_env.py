@@ -1,4 +1,5 @@
 import numpy as np
+import pdb
 
 from gym.vector import SyncVectorEnv as SyncVectorEnv_
 from gym.vector.utils import concatenate, create_empty_array

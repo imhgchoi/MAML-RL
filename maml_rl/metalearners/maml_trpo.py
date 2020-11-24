@@ -85,8 +85,7 @@ class MAMLTRPO(GradientBasedMetaLearner):
 
     async def surrogate_loss(self, train_futures, valid_futures, old_pi=None):
         first_order = (old_pi is not None) or self.first_order
-        params = await self.adapt(train_futures,
-                                  first_order=first_order)
+        params = await self.adapt(train_futures, first_order=first_order)
 
         with torch.set_grad_enabled(old_pi is None):
             valid_episodes = await valid_futures
@@ -119,21 +118,16 @@ class MAMLTRPO(GradientBasedMetaLearner):
         logs['kl_before'] = to_numpy(old_kls)
 
         old_loss = sum(old_losses) / num_tasks
-        grads = torch.autograd.grad(old_loss,
-                                    self.policy.parameters(),
-                                    retain_graph=True)
+        grads = torch.autograd.grad(old_loss, self.policy.parameters(), retain_graph=True)
         grads = parameters_to_vector(grads)
 
         # Compute the step direction with Conjugate Gradient
         old_kl = sum(old_kls) / num_tasks
         hessian_vector_product = self.hessian_vector_product(old_kl, damping=cg_damping)
-        stepdir = conjugate_gradient(hessian_vector_product,
-                                     grads,
-                                     cg_iters=cg_iters)
+        stepdir = conjugate_gradient(hessian_vector_product, grads, cg_iters=cg_iters)
 
         # Compute the Lagrange multiplier
-        shs = 0.5 * torch.dot(stepdir,
-                              hessian_vector_product(stepdir, retain_graph=False))
+        shs = 0.5 * torch.dot(stepdir, hessian_vector_product(stepdir, retain_graph=False))
         lagrange_multiplier = torch.sqrt(shs / max_kl)
 
         step = stepdir / lagrange_multiplier
@@ -144,8 +138,7 @@ class MAMLTRPO(GradientBasedMetaLearner):
         # Line search
         step_size = 1.0
         for _ in range(ls_max_steps):
-            vector_to_parameters(old_params - step_size * step,
-                                 self.policy.parameters())
+            vector_to_parameters(old_params-step_size*step, self.policy.parameters())
 
             losses, kls, _ = self._async_gather([
                 self.surrogate_loss(train, valid, old_pi=old_pi)

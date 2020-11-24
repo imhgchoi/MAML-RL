@@ -1,5 +1,5 @@
 {
-  "env-name": "2DNavigation-v0",
+  "env-name": "Sparse2DNavigation-v0",
   "env-kwargs": {
     "low": -0.5,
     "high": 0.5
@@ -22,12 +22,13 @@
   "cg-damping": 1e-05,
   "ls-max-steps": 15,
   "ls-backtrack-ratio": 0.8,
-  "config": "configs/maml/2d-navigation.yaml",
+  "config": null,
+  "env_name": "Sparse2DNavigation-v0",
   "output_folder": "out\\default",
   "seed": null,
   "num_workers": 15,
   "use_cuda": false,
-  "warm_start": true,
+  "warm_start": false,
   "device": "cpu",
   "policy_filedir": "out\\default\\policy.th",
   "config_filedir": "out\\default\\config.json"

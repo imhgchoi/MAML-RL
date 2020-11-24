@@ -61,3 +61,24 @@ register(
     entry_point='maml_rl.envs.navigation:Navigation2DEnv',
     max_episode_steps=100
 )
+
+register(
+    'Sparse2DNavigation-v0',
+    entry_point='maml_rl.envs.navigation:SparseNavigation2DEnv',
+    max_episode_steps=100
+)
+
+register(
+    'Noisy2DNavigation-v0',
+    entry_point='maml_rl.envs.navigation:NoisyNavigation2DEnv',
+    max_episode_steps=100
+)
+
+
+# Market
+# ----------------------------------------
+
+register(
+    'StockMarket-v0',
+    entry_point='maml_rl.envs.market:StockMarketEnv'
+)
