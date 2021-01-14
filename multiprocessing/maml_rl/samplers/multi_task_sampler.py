@@ -122,6 +122,9 @@ class MultiTaskSampler(Sampler):
             train_episodes = await asyncio.gather(*[asyncio.gather(*futures)
                                                   for futures in train_futures])
             valid_episodes = await asyncio.gather(*valid_futures)
+            print(train_episodes[0][0].observations[:,0,:])
+            print(train_episodes[0][0].observations.shape)
+            exit()
             return (train_episodes, valid_episodes)
 
         samples = self._event_loop.run_until_complete(_wait(*episodes_futures))
